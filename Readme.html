@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For You 💌</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #ffe4e9 0%, #ffd4e0 50%, #ffb3c6 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Floating hearts background */
+        .heart-float {
+            position: fixed;
+            font-size: 30px;
+            opacity: 0.6;
+            animation: floatHeart 15s infinite linear;
+            pointer-events: none;
+        }
+
+        @keyframes floatHeart {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Envelope styles */
+        .envelope-container {
+            display: block;
+            text-align: center;
+        }
+
+        .envelope {
+            width: 300px;
+            height: 200px;
+            position: relative;
+            background: #e74c3c;
+            margin: 0 auto;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .envelope:hover {
+            transform: scale(1.05);
+        }
+
+        .envelope-flap {
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 100px solid #c0392b;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform-origin: top;
+            transition: transform 0.6s ease;
+        }
+
+        .envelope.open .envelope-flap {
+            transform: rotateX(180deg);
+        }
+
+        .envelope-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Card/Letter styles */
+        .card-container {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            border: 5px solid #e74c3c;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-container {
+            display: block;
+        }
+
+        .answer-container {
+            display: none;
+        }
+
+        h1 {
+            color: #e74c3c;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .minion-image {
+            max-width: 300px;
+            height: auto;
+            margin: 20px auto;
+            border-radius: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            font-family: 'Georgia', serif;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        #yesBtn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        #yesBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.6);
+        }
+
+        #noBtn {
+            background: linear-gradient(135deg, #e0e0e0 0%, #b0b0b0 100%);
+            color: #666;
+        }
+
+        #noBtn:hover {
+            background: linear-gradient(135deg, #d0d0d0 0%, #a0a0a0 100%);
+        }
+
+        .success-message {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .success-message h2 {
+            color: #e74c3c;
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .success-message p {
+            color: #333;
+            font-size: 1.3em;
+            line-height: 1.8;
+            margin: 15px 0;
+            font-weight: 600;
+        }
+
+        .heart {
+            color: #e74c3c;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% {
+                transform: scale(1);
+            }
+            25% {
+                transform: scale(1.2);
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #e74c3c;
+            position: absolute;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Envelope screen -->
+    <div class="envelope-container" id="envelopeContainer">
+        <div class="envelope" id="envelope">
+            <div class="envelope-flap"></div>
+            <div class="envelope-text">For You 💌</div>
+        </div>
+    </div>
+
+    <!-- Card/Letter screen -->
+    <div class="card-container" id="cardContainer">
+        <div class="question-container" id="questionContainer">
+            <h1>Will you be my Valentine? ❤️</h1>
+            <img src="minion.png" alt="Minion with heart" class="minion-image" id="minionImage">
+            <div class="button-container">
+                <button id="yesBtn">Yes! 💕</button>
+                <button id="noBtn">No</button>
+            </div>
+        </div>
+
+        <div class="answer-container" id="answerContainer">
+            <div class="success-message">
+                <h2>Perfect!</h2>
+                <img src="minion.png" alt="Minion with heart" class="minion-image">
+                <p>Details coming soon...</p>
+                <p>Just know it's going to be special 😊</p>
+                <p style="font-size: 2em; margin-top: 30px;">💐🌹❤️</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize EmailJS with your Public Key
+        (function(){
+            emailjs.init("5A8riZ6HG00oA3jis");
+        })();
+
+        // Create floating hearts
+        function createFloatingHearts() {
+            const heartSymbols = ['❤️', '💕', '💖', '💗', '💝'];
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'heart-float';
+                    heart.textContent = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                    heart.style.left = Math.random() * 100 + '%';
+                    heart.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                    heart.style.animationDelay = Math.random() * 5 + 's';
+                    document.body.appendChild(heart);
+                }, i * 500);
+            }
+        }
+
+        createFloatingHearts();
+
+        // Envelope interaction
+        const envelope = document.getElementById('envelope');
+        const envelopeContainer = document.getElementById('envelopeContainer');
+        const cardContainer = document.getElementById('cardContainer');
+
+        envelope.addEventListener('click', function() {
+            envelope.classList.add('open');
+            setTimeout(() => {
+                envelopeContainer.style.display = 'none';
+                cardContainer.style.display = 'block';
+            }, 800);
+        });
+
+        // Button interactions
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const questionContainer = document.getElementById('questionContainer');
+        const answerContainer = document.getElementById('answerContainer');
+        
+        let yesSize = 1.2; // Starting font size in em
+        let noClickCount = 0;
+        const noButtonTexts = [
+            'No',
+            'Try again',
+            'Are you sure?',
+            'Really?',
+            'Think again!',
+            'Reconsider?',
+            'You sure?',
+            'Positive?',
+            'Last chance!',
+            'Pretty please?'
+        ];
+
+        noBtn.addEventListener('click', function() {
+            noClickCount++;
+            
+            // Change the "No" button text
+            if (noClickCount < noButtonTexts.length) {
+                noBtn.textContent = noButtonTexts[noClickCount];
+            } else {
+                noBtn.textContent = 'Fine... Yes?';
+            }
+            
+            // Increase yes button size
+            yesSize += 0.5;
+            yesBtn.style.fontSize = yesSize + 'em';
+            yesBtn.style.padding = (15 + noClickCount * 5) + 'px ' + (30 + noClickCount * 10) + 'px';
+            
+            // Shake the no button
+            noBtn.style.animation = 'shake 0.5s';
+            setTimeout(() => {
+                noBtn.style.animation = '';
+            }, 500);
+            
+            // Make no button smaller
+            if (noClickCount > 3) {
+                noBtn.style.fontSize = Math.max(0.7, 1 - (noClickCount * 0.08)) + 'em';
+            }
+        });
+
+        yesBtn.addEventListener('click', function() {
+            // Send silent email notification
+            sendEmailNotification();
+            
+            // Show success message
+            questionContainer.style.display = 'none';
+            answerContainer.style.display = 'block';
+            createConfetti();
+        });
+
+        function sendEmailNotification() {
+            // Send email silently in the background
+            const templateParams = {
+                to_email: 'nanafrims10@gmail.com',
+                message: '🎉 SHE SAID YES! 💛',
+                timestamp: new Date().toLocaleString()
+            };
+
+            emailjs.send('service_abc123', 'template_xyz789', templateParams)
+                .then(function(response) {
+                    console.log('Email sent successfully!', response);
+                }, function(error) {
+                    console.log('Email failed to send', error);
+                });
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#e74c3c', '#ff6b9d', '#ffd89b', '#c0392b', '#f67280'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-10px';
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = Math.random() * 10 + 5 + 'px';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.borderRadius = '50%';
+                    confetti.style.animation = `confetti-fall ${Math.random() * 2 + 2}s linear`;
+                    confetti.style.zIndex = '1000';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
+        }
+    </script>
+</body>
+</html>
